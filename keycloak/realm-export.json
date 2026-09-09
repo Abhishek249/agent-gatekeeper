@@ -1,0 +1,70 @@
+{
+  "realm": "agents",
+  "enabled": true,
+  "displayName": "Agent Gatekeeper - Demo Realm",
+  "accessTokenLifespan": 900,
+  "sslRequired": "none",
+  "clientScopes": [
+    {
+      "name": "actions:write",
+      "description": "Grants permission to perform write actions on standard-tier resources.",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "actions:destructive",
+      "description": "Grants permission to perform destructive actions, subject to the policy's business-hours window.",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "actions:override",
+      "description": "Grants permission to write to critical-tier resources. Optional scope: must be explicitly requested, not granted by default - the realm-level equivalent of least privilege.",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "demo-agent",
+      "name": "Demo Agent Service Account",
+      "description": "A sample agent identity for the docker-compose demo. Client-credentials grant only - no user ever logs in as this client, which mirrors how a real autonomous agent would authenticate.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "demo-agent-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email",
+        "actions:write",
+        "actions:destructive"
+      ],
+      "optionalClientScopes": [
+        "actions:override",
+        "offline_access",
+        "address",
+        "phone",
+        "microprofile-jwt"
+      ]
+    }
+  ]
+}
