@@ -1,0 +1,44 @@
+# Brings up the two real pieces of infrastructure this project integrates
+# with - Keycloak (identity) and OPA (policy) - so the gateway can be run
+# end to end against the genuine services, not stand-ins.
+#
+#   docker compose up
+#
+# Keycloak:  http://localhost:8080  (admin console: admin / admin)
+#            realm "agents" is auto-imported from keycloak/realm-export.json,
+#            including the "demo-agent" client-credentials client.
+# OPA:       http://localhost:8181  serving policies/agent_authz.rego
+#
+# Then, with GATEKEEPER_OPA_URL=http://localhost:8181 and
+# GATEKEEPER_JWKS_URL=http://localhost:8080/realms/agents/protocol/openid-connect/certs,
+# run `python -m examples.demo` for the fully-live path, or start the
+# gateway itself with uvicorn (see README).
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  opa:
+    image: openpolicyagent/opa:latest-static
+    command: ["run", "--server", "--addr=:8181", "/policies"]
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8181 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
